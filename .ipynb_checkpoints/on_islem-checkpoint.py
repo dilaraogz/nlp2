@@ -4,8 +4,6 @@ import snowballstemmer as sn
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from gensim.models import Word2Vec
-from snowballstemmer import stemmer
-
 
 
 #sayısal değerlerin kaldırılması
@@ -31,7 +29,7 @@ def remove_noktalama(value):
 
 #linkleri kaldırma 
 def remove_link(value):
-    return re.sub('((www\.[^\s]+)|(https?://[^\s]+))','',value)
+    return re.sub(r'http\S+|www\S+', '', value)
 
 #hashtagleri kaldırma 
 def remove_hashtag(value):
@@ -60,10 +58,12 @@ def stem_word(value):
 def pre_processing(value):
     return [remove_numeric(remove_emoji
                           (remove_single_character
-                           (remove_link
-                            (remove_hashtag
-                             (remove_username
-                              (stem_word(word))))))) for word in value.split()]
+                           (remove_noktalama
+                            (remove_link
+                             (remove_hashtag
+                              (remove_username
+                               (stem_word(word)
+                               ))))))) for word in value.split()]
 
 #boslukların kaldırılması
 def remove_space(value):
