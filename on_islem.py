@@ -4,72 +4,72 @@ import snowballstemmer as sn
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from gensim.models import Word2Vec
-from snowballstemmer import stemmer
 
-
-
-#sayısal değerlerin kaldırılması
+# sayısal verilerin kaldırılması
 def remove_numeric(value):
-    bfr=[item for item in value if not item.isdigit()]
-    bfr="".join(bfr)
+    bfr = [item for item in value if not item.isdigit()]
+    bfr = "".join(bfr)
     return bfr
 
-#emojilerin kaldırılması
-import re 
 def remove_emoji(value):
-    bfr=re.compile("[\U00010000-\U0010fffF]",flags=re.UNICODE)
-    bfr=bfr.sub(r'',value)
+    bfr = re.compile("[\U00010000-\U0010ffff]",flags=re.UNICODE)
+    bfr = bfr.sub(r'',value)
     return bfr
 
-#tek karakterli ifadelerin kaldırılması
-def remove_single_character(value):
-     return re.sub(r'(?:^| )\w(?:$| )','',value)
 
-#noktalama ifadelerinin kaldırılması
+# tek karakterli ifadelerin kaldırılması
+def remove_single_chracter(value):
+    return re.sub(r'(?:^| )\w(?:$| )','',value)
+
+
+
+# noktalama işaretlerinin kaldırılması
 def remove_noktalama(value):
-    return re.sub(r'[^\w\s]', '', value)
+    return re.sub(r'[^\w\s]','',value)
 
-#linkleri kaldırma 
+
+
+# linklerin kaldırılması
 def remove_link(value):
     return re.sub('((www\.[^\s]+)|(https?://[^\s]+))','',value)
 
-#hashtagleri kaldırma 
-def remove_hashtag(value):
-    return re.sub(r'#\w+', '', value)
 
-#kullanıcı adlarınının kaldırılması
+# linklerin kaldırılması
 def remove_username(value):
-    return re.sub(r'@\w+', '',value )
+    return re.sub('(@[^\s]+)','',value)
+
+
+def remove_hashtag(value):
+    return re.sub(r'#[^\s]+','',value)
+
+
+stop_word = "acaba altmış altı ama ancak arada aslında ayrıca az bana bazı belki ben benden beni benim beri beş bile bin bir birçok biri birkaç birkez birşey birşeyi biz bize bizden bizi bizim böyle böylece bu buna bunda bundan bunlar bunları bunların bunu bunun burada çok çünkü da daha dahi de defa değil diğer diye doksan dokuz dolayı dolayısıyla dört edecek eden ederek edilecek ediliyor edilmesi ediyor eğer elli en etmesi etti ettiği ettiğini gibi göre halen hangi hatta hem henüz hep hepsi her herhangi herkesin hiç hiçbir için iki ile ilgili ise işte itibaren itibariyle kadar karşın katrilyon kendi kendilerine kendini kendisi kendisine kendisini kez ki kim kimden kime kimi kimse kırk milyar milyon mu mü mı nasıl ne neden nedenle nerde nerede nereye niye niçin o olan olarak oldu olduğu olduğunu olduklarını olmadı olmadığı olmak olması olmayan olmaz olsa olsun olup olur olursa oluyor on ona ondan onlar onlardan onları onların onu onun otuz oysa öyle pek rağmen sadece sanki sekiz seksen sen senden seni senin siz sizden sizi sizin şey şeyden şeyi şeyler şöyle şu şuna şunda şundan şunları şunu tarafından trilyon tüm üç üzerine var vardı ve veya ya yani yapacak yapılan yapılması yapıyor yapmak yaptı yaptığı yaptığını yaptıkları yedi yerine yetmiş yine yirmi yoksa yüz zaten"
+stop_word = stop_word.split()
+
 
 def stem_word(value):
-   
-     stemmer=snowballstemmer.stemmer("turkish")#tüekçe kullanım için
-     value=value.lower() #küçük harfe çevirmek için
-     value=stemmer.stemWords(value.split())
-     stop_words = ["acaba", "ama", "aslında", "az", "bazı", "belki", "ben", "biri", "birkaç", "birşey", "biz", "bu", 
-        "çok","çünkü", "da", "daha", "de", "defa", "diye", "eğer"
-        "en", "gibi", "hem", "hep", "hepsi", "her", "hiç", "için", "ile", "ise", 
-        "kez", "ki", "kim", "mı", "mu", "mü", "nasıl", "ne", "neden",
-        "nerde", "nerede", "nereye", "niçin", "niye", "o", "sanki", "şey", "siz", "şu", 
-        "tüm", "ve", "veya", "ya", "yani",
-        "bir","iki","üç","dört","beş","altı","yedi","sekiz","dokuz","on"]
-     value=' '.join(value)
-     return value
+    stemmer = sn.stemmer("turkish")
+    value = value.lower()
+    value = stemmer.stemWords(value.split())
+    stop_words = stop_word
+    
+    value = [item for item in value if not item in stop_words]
+    value = ' '.join(value)
+    return value
 
-#Tüm fonksiyonları çalıştırma
+
 def pre_processing(value):
     return [remove_numeric(remove_emoji
-                          (remove_single_character
+                          (remove_single_chracter
                            (remove_link
                             (remove_hashtag
                              (remove_username
                               (stem_word(word))))))) for word in value.split()]
 
-#boslukların kaldırılması
+
+
 def remove_space(value):
-    return[item for item in value if item.strip()]
-
-
+    return [item for item in value if item.strip()]
 
 def bag_of_words(value):
     vectorizer = CountVectorizer()
@@ -95,4 +95,3 @@ def word2vec(value):
     bfr_list = sum(bfr_list)
     bfr_list = bfr_list / bfr_len
     return bfr_list.tolist()
-
